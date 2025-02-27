@@ -53,11 +53,11 @@ const handleSignOut = async () => {
 <template>
   <div class="flex flex-col items-center justify-center h-screen bg-gray-100">
     <!-- Hide Navbar on SignIn & SignUp -->
-    <nav v-if="!hideNavbar" class="bg-white p-4 rounded shadow mt-20">
+    <nav v-if="!hideNavbar" class="bg-white p-4 rounded shadow mt-25">
       <template v-if="isAuthenticated">
         <button 
           @click="handleSignOut" 
-          class="ml-4 bg-red-500 text-white px-4 py-2 rounded cursor-pointer hover:bg-red-600">
+          class="ml-1 bg-red-500 text-white px-4 py-2 rounded cursor-pointer hover:bg-red-600">
           Sign Out
         </button>
       </template>

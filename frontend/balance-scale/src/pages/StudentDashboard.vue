@@ -1,3 +1,67 @@
+<template>
+  <div class="flex flex-col items-center bg-gradient-to-b from-gary-100 to-gary-100 min-h-screen p-4 md:p-6">
+    <div class="w-full max-w-7xl">
+      <!-- Header Section -->
+      <div class="flex flex-col md:flex-row justify-between items-center mb-6 text-center md:text-left">
+        <h1 class="text-4xl md:text-5xl font-bold text-blue-600 mb-4 md:mb-0">Balance the Scale!</h1>
+        <div class=" ml-9 flex flex-col md:flex-row gap-4 md:gap-8">
+          <div class="flex gap-4 md:gap-6">
+            <div class="bg-cyan-300 p-3 md:p-4 rounded-lg shadow-md text-lg md:text-xl">
+              <p>Score: <span class="font-semibold text-black-600">{{ currentScore }}</span></p>
+            </div>
+            <div class="bg-white p-3 md:p-4 rounded-lg shadow-md text-lg md:text-xl">
+              <p>🏆 High: <span class="font-semibold text-yellow-600">{{ highScore }}</span></p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Feedback Section -->
+      <div class="mb-6 bg-white py-3 px-4 md:px-6 rounded-lg shadow-md text-center w-full">
+        <p class="text-lg md:text-xl font-semibold" :class="{ 'text-green-600': feedback.includes('Balanced'), 'text-red-600': feedback.includes('Too heavy') }">
+          {{ feedback }}
+        </p>
+      </div>
+
+      <!-- Balance Scale -->
+      <div class="relative w-full h-64 sm:h-80 flex justify-center items-center mt-6">  <!-- Adjusted centering -->
+        <div class="relative w-11/12 max-w-3xl h-3 bg-gray-500 rounded-md transition-transform duration-700" :style="{ transform: scaleTilt }">
+          <div class="absolute -left-28 top-[-42px] w-32 sm:w-40 flex flex-col items-center">  <!-- Moved up -->
+            <div class="flex flex-wrap justify-center -mt-8">  <!-- Increased spacing -->
+              <div v-for="n in leftBalls" :key="`left-${n}`" class="w-4 h-4 sm:w-6 sm:h-6 bg-gray-700 rounded-full m-1 shadow-md"></div>
+            </div>
+            <div class="mb-2 h-4 sm:h-6 bg-gray-500 rounded-md shadow-md w-full"></div>
+          </div>
+
+          <div class="absolute -right-24 top-[-20px] w-32 sm:w-40 flex flex-col items-center">  <!-- Adjusted alignment -->
+            <div class="flex flex-wrap justify-center -mt-6">
+              <div v-for="n in rightBalls" :key="`right-${n}`" class="w-4 h-4 sm:w-6 sm:h-6 bg-blue-600 rounded-full m-1 shadow-md"></div>
+            </div>
+            <div class="-mb-1 h-4 sm:h-6 bg-gray-500 rounded-md shadow-md w-full"></div>  <!-- Adjusted position -->
+          </div>
+        </div>
+
+        <!-- Center Fulcrum -->
+        <div class="absolute bottom-19 w-0 h-0 border-l-[20px] sm:border-l-[40px] border-r-[20px] sm:border-r-[40px] border-t-[40px] sm:border-t-[80px] border-gray-800"></div>
+      </div>
+
+      <!-- Controls Section -->
+      <div class="w-full bg-white rounded-xl shadow-lg p-4 md:p-6 mt-2">
+        <p class="text-lg md:text-xl text-center text-gray-700 mb-4">Select a weight to add on the right side:</p>
+        <div class="flex justify-center flex-wrap gap-3 md:gap-6">
+          <button 
+            v-for="number in numberChoices" 
+            :key="number" 
+            @click="checkBalance(number)" 
+            class="w-12 h-12 md:w-16 md:h-16 flex items-center justify-center bg-blue-600 text-white text-xl md:text-2xl font-bold rounded-full hover:bg-blue-700 transition transform hover:scale-110 shadow-md">
+            {{ number }}
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</template>
+
 <script setup>
 import { ref, onMounted, computed } from "vue";
 import { getFirestore, doc, getDoc, setDoc } from "firebase/firestore";
@@ -5,33 +69,39 @@ import { getAuth } from "firebase/auth";
 
 const db = getFirestore();
 const auth = getAuth();
-const targetNumber = ref(0);
-const givenNumber = ref(0);
-const userInput = ref(null);
-const feedback = ref("Fill in the missing number!");
+const leftBalls = ref(0);
+const rightBalls = ref(0);
 const highScore = ref(0);
 const currentScore = ref(0);
+const numberChoices = ref([]);
+const feedback = ref("Select a number to balance the scale!");
 
 const generateTarget = () => {
-  targetNumber.value = Math.floor(Math.random() * 50) + 10;
-  givenNumber.value = Math.floor(Math.random() * (targetNumber.value - 5)) + 1;
-  userInput.value = null;
-  feedback.value = "Fill in the missing number!";
+  leftBalls.value = Math.floor(Math.random() * 10) + 5;
+  rightBalls.value = 0;
+  feedback.value = "Select a number to balance the scale!";
+  const exactMatch = leftBalls.value;
+  const part1 = Math.floor(Math.random() * (leftBalls.value - 1)) + 1;
+  const part2 = leftBalls.value - part1;
+  numberChoices.value = [exactMatch, part1, part2].sort(() => Math.random() - 0.5);
 };
 
-const checkBalance = () => {
-  if (parseInt(userInput.value) + givenNumber.value === targetNumber.value) {
-    feedback.value = "🎯 Correct! The scale is balanced!";
+const checkBalance = (selectedNumber) => {
+  rightBalls.value += selectedNumber;
+  if (rightBalls.value === leftBalls.value) {
+    feedback.value = "🎯 Balanced!";
     currentScore.value += 1;
-
     if (currentScore.value > highScore.value) {
       highScore.value = currentScore.value;
       updateHighScore();
     }
-    
-    setTimeout(generateTarget, 1000);
+    setTimeout(generateTarget, 1500);
+  } else if (rightBalls.value > leftBalls.value) {
+    feedback.value = "❌ Too heavy! Resetting...";
+    currentScore.value = 0;
+    setTimeout(generateTarget, 1500);
   } else {
-    feedback.value = "❌ Incorrect! Try again.";
+    feedback.value = "Not balanced yet. Add more weight!";
   }
 };
 
@@ -58,53 +128,7 @@ onMounted(() => {
 });
 
 const scaleTilt = computed(() => {
-  const sum = (userInput.value ? parseInt(userInput.value) : 0) + givenNumber.value;
-  const ratio = sum / targetNumber.value;
-
-  if (sum === targetNumber.value) return "rotate(0deg)";
-  if (sum < targetNumber.value) return `rotate(${-Math.max(30 - ratio * 30, 5)}deg)`;
-  return `rotate(${Math.min(ratio * 30, 30)}deg)`;
+  const difference = leftBalls.value - rightBalls.value;
+  return `rotate(${Math.min(Math.max(difference * 0.5, -8), 8)}deg)`;
 });
 </script>
-
-<template>
-  <div class="flex flex-col items-center bg-gray-100 min-h-screen p-6">
-    <h1 class="text-5xl font-bold text-yellow-500 mb-4">Balance Scale Addition Game</h1>
-    
-    <p class="text-2xl font-semibold"> Target Number: <span class="text-green-600">{{ targetNumber }}</span></p>
-    <p class="text-lg font-semibold text-gray-800">{{ feedback }}</p>
-    <p class="text-lg"> Current Score: <span class="font-semibold text-blue-500">{{ currentScore }}</span></p>
-    <p class="text-lg">🏅 High Score: <span class="font-semibold text-yellow-500">{{ highScore }}</span></p>
-
-    <div class="relative flex justify-center items-center my-6">
-      <div class="relative w-64 h-64 rounded-full bg-gray-300 flex items-center justify-center border-4 border-black">
-        <!-- Scale Indicator -->
-        <div 
-          class="absolute w-1 h-24 bg-red-600 origin-bottom transition-transform duration-500 ease-in-out" 
-          :style="{ transform: scaleTilt }">
-        </div>
-        
-        <!-- Labels Positioned Inside the Scale -->
-        <span class="absolute left-10 bottom-8 text-lg font-bold text-gray-800">Low</span>
-        <span class="absolute top-10 left-1/2 transform -translate-x-1/2 text-xl font-semibold text-gray-800">Perfect</span>
-        <span class="absolute right-10 bottom-8 text-lg font-bold text-gray-800">High</span>
-      </div>
-    </div>
-
-    <p class="text-lg mb-2"> Fill in the blank: <span class="font-semibold">? + {{ givenNumber }} = {{ targetNumber }}</span></p>
-    <input 
-      type="number" 
-      v-model.number="userInput" 
-      placeholder=" Enter the number" 
-      class="border border-gray-400 rounded-md p-2 w-40 text-center mb-4"
-    />
-    
-    <button 
-      @click="checkBalance" 
-      class="px-6 py-2 bg-blue-600 text-white font-semibold rounded-md hover:bg-blue-700 transition"
-    >
-      Submit
-    </button>
-  </div>
-</template>
-
