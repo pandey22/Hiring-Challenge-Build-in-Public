@@ -91,3 +91,12 @@ Authenticated users can sign out from the dashboard.
 4. The scale  adjusts based on how close the user is.
 5. Correct answers increase the high score, which is stored in Firebase.
 
+Snippets of the project : 
+
+Workflow: 
+![image](https://github.com/user-attachments/assets/89c740a8-b992-4db0-bad9-9278f9c6b8a2)
+
+Student Game: 
+
+![image](https://github.com/user-attachments/assets/76920711-9b1e-40d9-b0bf-217cbd3f028c)
+
