@@ -32,7 +32,7 @@ async function signInWithGoogle() {
     const idToken = await result.user.getIdToken();  // Get Firebase ID Token
     
     // Send token to FastAPI for verification
-    const response = await axios.get(`${API_BASE_URL}/verify`, { token: idToken });
+    const response = await axios.post(`${API_BASE_URL}/verify`, { token: idToken });
 
     // Redirect user based on role
     const role = response.data.role;
