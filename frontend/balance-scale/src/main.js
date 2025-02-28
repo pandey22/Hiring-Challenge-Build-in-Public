@@ -21,6 +21,9 @@ const firebaseConfig = {
 const firebaseApp = initializeApp(firebaseConfig);
 const auth = getAuth(firebaseApp);
 
+// API Base URL (from environment variables)
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "https://hiring-challenge-build-in-public.onrender.com";
+
 // Firebase Sign-In Function
 async function signInWithGoogle() {
   const provider = new GoogleAuthProvider();
@@ -29,7 +32,7 @@ async function signInWithGoogle() {
     const idToken = await result.user.getIdToken();  // Get Firebase ID Token
     
     // Send token to FastAPI for verification
-    const response = await axios.post("https://hiring-challenge-build-in-public.onrender.com/verify", { token: idToken });
+    const response = await axios.post(`${API_BASE_URL}/verify`, { token: idToken });
 
     // Redirect user based on role
     const role = response.data.role;
@@ -40,6 +43,9 @@ async function signInWithGoogle() {
     }
   } catch (error) {
     console.error("Authentication Error:", error);
+    if (error.response) {
+      console.error("Server Response:", error.response.data);
+    }
   }
 }
 
