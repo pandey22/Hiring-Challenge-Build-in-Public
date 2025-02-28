@@ -40,19 +40,22 @@ const signInWithEmail = async () => {
   }
 };
 
-// 🔹 Sign in with Google
 const signInWithGoogle = async () => {
   try {
     const provider = new GoogleAuthProvider();
     const result = await signInWithPopup(auth, provider);
     const idToken = await result.user.getIdToken(); // Get Firebase ID Token
 
+    console.log("🟢 Firebase ID Token:", idToken); // ✅ Log token for debugging
+
     // 🔥 Send token to FastAPI for verification
     const response = await axios.post(
       "https://hiring-challenge-build-in-public.onrender.com/verify",
-      { token: idToken },  // ✅ Send token in JSON format
-      { headers: { "Content-Type": "application/json" } }  // ✅ Ensure correct headers
+      { token: idToken },
+      { headers: { "Content-Type": "application/json" } }
     );
+
+    console.log("🔹 Backend Response:", response.data);
 
     const role = response.data.role; // Get role from backend
     console.log("User role:", role);
@@ -63,10 +66,11 @@ const signInWithGoogle = async () => {
       router.push("/StudentDashboard");
     }
   } catch (error) {
-    console.error("Google Login Error:", error);
+    console.error("❌ Google Login Error:", error);
     errorMessage.value = "Google sign-in failed. Please try again.";
   }
 };
+
 
 </script>
 
