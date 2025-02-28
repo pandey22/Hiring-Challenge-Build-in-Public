@@ -29,8 +29,8 @@ async function signInWithGoogle() {
     const idToken = await result.user.getIdToken();  // Get Firebase ID Token
     
     // Send token to FastAPI for verification
-    const response = await axios.post("http://localhost:8000/verify", { token: idToken });
-    
+    const response = await axios.post("https://hiring-challenge-build-in-public.onrender.com/verify", { token: idToken });
+
     // Redirect user based on role
     const role = response.data.role;
     if (role === "teacher") {
