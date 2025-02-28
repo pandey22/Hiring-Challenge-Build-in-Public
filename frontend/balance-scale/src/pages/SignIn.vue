@@ -43,8 +43,19 @@ const signInWithEmail = async () => {
 // 🔹 Sign in with Google
 const signInWithGoogle = async () => {
   try {
+    const provider = new GoogleAuthProvider();
     const result = await signInWithPopup(auth, provider);
-    const role = await getUserRole(result.user.uid);
+    const idToken = await result.user.getIdToken(); // Get Firebase ID Token
+
+    // 🔥 Send token to FastAPI for verification
+    const response = await axios.post(
+      "https://hiring-challenge-build-in-public.onrender.com/verify",
+      { token: idToken },  // ✅ Send token in JSON format
+      { headers: { "Content-Type": "application/json" } }  // ✅ Ensure correct headers
+    );
+
+    const role = response.data.role; // Get role from backend
+    console.log("User role:", role);
 
     if (role === "teacher") {
       router.push("/TeacherDashboard");
@@ -56,6 +67,7 @@ const signInWithGoogle = async () => {
     errorMessage.value = "Google sign-in failed. Please try again.";
   }
 };
+
 </script>
 
 <template>
