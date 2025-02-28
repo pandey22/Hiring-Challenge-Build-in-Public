@@ -5,6 +5,7 @@ from pydantic import BaseModel
 from starlette.middleware.cors import CORSMiddleware
 import os
 from dotenv import load_dotenv
+
 # Load environment variables
 load_dotenv()
 
@@ -14,17 +15,23 @@ app = FastAPI()
 # Enable CORS for Vue.js frontend communication
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5175,https://hiring-challenge-build-in-public.onrender.com"],  # Update this if needed
+    allow_origins=["http://localhost:5175", "https://hiring-challenge-build-in-public.onrender.com"],  # Update this if needed
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
+# Path to the Firebase service account key file
+SERVICE_ACCOUNT_PATH = os.path.join(os.path.dirname(__file__), "serviceAccKey.json")
+
 # Initialize Firebase Admin SDK
-SERVICE_ACCOUNT_PATH = os.getenv("FIREBASE_CREDENTIALS")  # Get from .env
-if not firebase_admin._apps:  # Prevent re-initialization
-    cred = credentials.Certificate(SERVICE_ACCOUNT_PATH)
-    firebase_admin.initialize_app(cred)
+if not firebase_admin._apps: 
+    try:
+        cred = credentials.Certificate(SERVICE_ACCOUNT_PATH)
+        firebase_admin.initialize_app(cred)
+        print("✅ Firebase initialized successfully.")
+    except Exception as e:
+        print(f"🔥 Error initializing Firebase: {e}")
 
 # Firestore Database Instance
 db = firestore.client()
