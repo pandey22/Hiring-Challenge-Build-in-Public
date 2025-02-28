@@ -14,7 +14,7 @@ app = FastAPI()
 # Enable CORS for Vue.js frontend communication
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5175"],  # Update this if needed
+    allow_origins=["http://localhost:5175,https://hiring-challenge-build-in-public.onrender.com"],  # Update this if needed
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
